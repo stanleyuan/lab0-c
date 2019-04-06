@@ -29,6 +29,8 @@ queue_t *q_new()
     if (!q)
         return q;
     q->head = NULL;
+    q->tail = NULL;
+    q->size = 0;
     return q;
 }
 
@@ -37,6 +39,13 @@ void q_free(queue_t *q)
 {
     /* How about freeing the list elements and the strings? */
     /* Free queue structure */
+    if (q->head) {
+        for (list_ele_t *counter = q->head, *n = counter->next; counter != NULL;
+             counter = n, n = counter->next) {
+            free(counter->value);
+            free(counter);
+        }
+    }
     free(q);
 }
 
@@ -49,14 +58,33 @@ void q_free(queue_t *q)
  */
 bool q_insert_head(queue_t *q, char *s)
 {
-    list_ele_t *newh;
     /* What should you do if the q is NULL? */
-    newh = malloc(sizeof(list_ele_t));
-    /* Don't forget to allocate space for the string and copy it */
-    /* What if either call to malloc returns NULL? */
-    newh->next = q->head;
-    q->head = newh;
-    return true;
+    if (q) {
+        list_ele_t *newh;
+        char *news;
+        int s_len = strlen(s) + 1;
+        newh = malloc(sizeof(list_ele_t));
+        /* Don't forget to allocate space for the string and copy it */
+        /* What if either call to malloc returns NULL? */
+        if (newh) {
+            news = malloc(sizeof(s_len) * sizeof(char));
+            if (news) {
+                // test later
+                memset(news, '\0', s_len);
+                strcpy(news, s);
+                newh->next = q->head;
+                newh->value = news;
+
+                if (!q->head)
+                    q->tail = newh;
+                q->head = newh;
+                q->size += 1;
+                return true;
+            }
+            free(newh);
+        }
+    }
+    return false;
 }
 
 /*
@@ -84,8 +112,18 @@ bool q_insert_tail(queue_t *q, char *s)
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
     /* You need to fix up this code. */
-    q->head = q->head->next;
-    return true;
+    if (q && q->head) {
+        list_ele_t *tmp = q->head;
+        memset(sp, '\0', bufsize);
+        if (sp)
+            strncpy(sp, tmp->value, bufsize - 1);
+        q->head = q->head->next;
+        free(tmp->value);
+        free(tmp);
+        q->size -= 1;
+        return true;
+    }
+    return false;
 }
 
 /*
