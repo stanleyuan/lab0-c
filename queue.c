@@ -39,14 +39,18 @@ void q_free(queue_t *q)
 {
     /* How about freeing the list elements and the strings? */
     /* Free queue structure */
-    if (q->head) {
-        for (list_ele_t *counter = q->head, *n = counter->next; counter != NULL;
-             counter = n, n = counter->next) {
-            free(counter->value);
-            free(counter);
+    if (q) {
+        if (q->head) {
+            while (q->head) {
+                list_ele_t *counter = q->head;
+                q->head = q->head->next;
+                free(counter->value);
+                free(counter);
+            }
         }
+        free(q);
     }
-    free(q);
+    return;
 }
 
 /*
@@ -67,7 +71,7 @@ bool q_insert_head(queue_t *q, char *s)
         /* Don't forget to allocate space for the string and copy it */
         /* What if either call to malloc returns NULL? */
         if (newh) {
-            news = malloc(sizeof(s_len) * sizeof(char));
+            news = malloc(s_len * sizeof(char));
             if (news) {
                 // test later
                 memset(news, '\0', s_len);
@@ -98,6 +102,31 @@ bool q_insert_tail(queue_t *q, char *s)
 {
     /* You need to write the complete code for this function */
     /* Remember: It should operate in O(1) time */
+
+    if (q) {
+        list_ele_t *tmp = malloc(sizeof(list_ele_t));
+        char *news;
+        int s_len = strlen(s) + 1;
+
+        if (tmp) {
+            news = malloc(s_len * sizeof(char));
+            if (news) {
+                memset(news, '\0', s_len);
+                strcpy(news, s);
+                tmp->value = news;
+                tmp->next = NULL;
+
+                q->size += 1;
+                if (!q->tail)
+                    q->head = tmp;
+                q->tail->next = tmp;
+                q->tail = tmp;
+                return true;
+            }
+            free(tmp);
+        }
+    }
+
     return false;
 }
 
@@ -136,7 +165,9 @@ int q_size(queue_t *q)
 {
     /* You need to write the code for this function */
     /* Remember: It should operate in O(1) time */
-    return q->size;
+    if (q)
+        return q->size;
+    return 0;
 }
 
 /*
