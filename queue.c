@@ -117,10 +117,13 @@ bool q_insert_tail(queue_t *q, char *s)
                 tmp->next = NULL;
 
                 q->size += 1;
-                if (!q->tail)
+                if (!q->tail) {
                     q->head = tmp;
-                q->tail->next = tmp;
-                q->tail = tmp;
+                    q->tail = tmp;
+                } else {
+                    q->tail->next = tmp;
+                    q->tail = tmp;
+                }
                 return true;
             }
             free(tmp);
